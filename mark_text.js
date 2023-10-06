@@ -4,6 +4,7 @@ chars_per_hour = document.getElementById("readingSpeedSlider").value*1000
 milisecondsPerChar = (3600 / chars_per_hour) * 1000
 total_chars_read = 0
 chars_read_since_last_pause = 0 
+startTime = Date.now()
 running = false
 paused = false
 
@@ -12,7 +13,7 @@ backgroundColor = "black"
 
 // due to technical limitations of the browser and javascript, perfect precision for the time intervals in which characters get marked is impossible
 // to improve the acccuracy of the marking speed over longer periods of time, this function tries to take the actual absolute time elapsed into account, and calculate how many characters should have been read up until this point. Based on the ration ebtween the actual characters that were read since the last pause, and the characters that should have been read since the last pause, the speedup ratio can be used to adjust the marking speed such that the chars_read_since_last_pause get closer to charsThatShouldHaveBeenReadSinceLastPause
-function normalizedSpeedupRatio(startTime){
+function normalizedSpeedupRatio(){
     charsThatShouldHaveBeenReadSinceLastPause = (Date.now() - startTime)/milisecondsPerChar
     if(chars_read_since_last_pause > 0 && charsThatShouldHaveBeenReadSinceLastPause > 0){
         speedupRatio = chars_read_since_last_pause/charsThatShouldHaveBeenReadSinceLastPause
@@ -22,7 +23,7 @@ function normalizedSpeedupRatio(startTime){
     return speedupRatio // todo: as the speedup ratio asymptotically reaches 1, the rate at which it changes slows down considerably, which may lead to a large number of interval restarts. Ideally the speedup should be biased towards trying to reach 1 quickly, such that it needs fewer steps to get there
 }
 
-function markLeafNode(element, startTime){
+function markLeafNode(element){
     if(element.nodeName === "MARK"){element = element.parentNode}
 
     if(element.childNodes !== undefined && element.childNodes.length === 2 && element.childNodes[1].textContent === ""){
@@ -42,19 +43,20 @@ function markLeafNode(element, startTime){
     }
     
 
-    intervalStartSpeedRatio = normalizedSpeedupRatio(startTime)
+    intervalStartSpeedRatio = normalizedSpeedupRatio()
     // console.log(intervalStartSpeedRatio) // debugging
 
 
     charMarkingInterval = setInterval(function(){
         if(running === false) {clearInterval(charMarkingInterval)} // todo bug: doesn't work for intervals after the first one
 
-        currentSpeedupRatio = normalizedSpeedupRatio(startTime)
+        currentSpeedupRatio = normalizedSpeedupRatio()
         // (currentSpeedupRatio > intervalStartSpeedRatio) and (currentSpeedupRatio < intervalStartSpeedRatio) have the effect the speed ratio adjustment prioritizes not restarting the interval if the current speed ratio moves the average overall speed in the correct direction 
+        
         if((currentSpeedupRatio > 1.03 && currentSpeedupRatio > intervalStartSpeedRatio) || (currentSpeedupRatio < 0.97 && currentSpeedupRatio < intervalStartSpeedRatio)) {
             console.log(currentSpeedupRatio) // debugging
             clearInterval(charMarkingInterval)
-            markLeafNode(element,startTime)
+            markLeafNode(element)
         }
 
         if(textNode.textContent.length === 0){
@@ -72,7 +74,7 @@ function markLeafNode(element, startTime){
                 nextElement = element.nextElementSibling
             }
 
-            markLeafNode(nextElement, startTime);
+            markLeafNode(nextElement);
         }
         
         // mark char
@@ -92,7 +94,7 @@ function markLeafNode(element, startTime){
             }
         }
 
-    },milisecondsPerChar * intervalStartSpeedRatio)
+    },milisecondsPerChar * normalizedSpeedupRatio())
 }
 
 
@@ -102,8 +104,7 @@ function markEverything(){
 
     // ignore clicks on UI div
     if(!element.classList.contains("UI_elem")){
-        startTime = Date.now()
-        chars_read_since_last_pause = 0
+        resetTimeStats()
 
         if(running){
             running = false
@@ -112,7 +113,7 @@ function markEverything(){
             running = true
         }
 
-        markLeafNode(element, startTime)
+        markLeafNode(element)
     }
 }
 
@@ -154,6 +155,8 @@ function textColorChangeHandler(){
 function updateReadingSpeed(){
     chars_per_hour = document.getElementById("readingSpeedInputBox").value
     milisecondsPerChar = (3600 / chars_per_hour) * 1000
+
+    resetTimeStats()
 }
 
 function updateMarkerColors(markers){
@@ -201,6 +204,11 @@ function toggleScript(){
         running = false
         document.body.removeEventListener("click",markEverything)
     }
+}
+
+function resetTimeStats(){
+    startTime = Date.now()
+    chars_read_since_last_pause = 0
 }
 
 document.body.addEventListener("click", markEverything)
