@@ -6,7 +6,7 @@
 
 ## How to use:
 
-1. Go to `https://reader.ttsu.app/` and open some book
+1. Go to `https://reader.ttsu.app/` and open some book. Go to the Settings and set the View Mode to Continuous, and the Writing Mode to Horizontal (I don't know what happens in Paginated or Vertical mode, haven't tested it)
 
 2. Copy the contents of `mark_text.js`, open the console of your browser (F12 for example) while you are in the browser tab in which ttsu is opened.
 
