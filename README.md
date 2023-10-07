@@ -34,3 +34,5 @@
 - When reaching the end of a chapter, or some other kind of "obstruction", the marker may stop. In that case click on the next text from which you want to restart the marker.
 
 - **Accuracy:** The main goal of this script is to be accurate over longer periods of time. For example, if you leave the marker running in the background while you switch tabs and do something else, the time measurement in the background will become very inaccurate for a short time. If you go back to your ttsu tab, the script will try to "catch up" by increasing the reading speed such that over some time the amount of text that is marked is the amount of text you would expect to be marked, given the reading speed selected.
+
+- Currently the way this tool counts characters and the way ttsu counts characters is different. In general, ttsu will ignore some characters that my tool currently does not ignore, which means that the reading speed in my tool will be a bit slower than what what you would expect if you used ttsu character numbers. I'm thinking about updating my tool to copy the way ttsu counts characters so the numbers are closer to each other.

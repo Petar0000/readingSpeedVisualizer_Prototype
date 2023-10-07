@@ -44,7 +44,7 @@ function markLeafNode(element){
     
 
     intervalStartSpeedRatio = normalizedSpeedupRatio()
-    // console.log(intervalStartSpeedRatio) // debugging
+    console.log(intervalStartSpeedRatio) // debugging
 
 
     charMarkingInterval = setInterval(function(){
